@@ -1,0 +1,68 @@
+name: VS Code CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        node-version: [20.18.1]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Cache node modules
+      uses: actions/cache@v4
+      with:
+        path: '**/node_modules'
+        key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-modules-
+
+    - name: Install Dependencies
+      run: |
+        npm install
+      env:
+        NODE_OPTIONS: "--max-old-space-size=8192"
+
+    - name: Build
+      run: |
+        npm run compile
+      env:
+        NODE_OPTIONS: "--max-old-space-size=8192"
+
+    - name: Run Tests
+      run: |
+        npm test
+      env:
+        NODE_OPTIONS: "--max-old-space-size=8192"
+
+    - name: Build Platform Specific
+      if: matrix.os == 'macos-latest'
+      run: |
+        node build/lib/preLaunch.js
+        NAME=$(node -p "require('./product.json').nameLong")
+        echo "Building $NAME for macOS"
+        gulp electron-darwin-sign
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: vscode-${{ runner.os }}
+        path: |
+          .build/electron/*.app
+          .build/electron/*.exe
+          .build/electron/*.AppImage
+        if-no-files-found: ignore
