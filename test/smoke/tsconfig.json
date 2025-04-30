@@ -1,6 +1,7 @@
 {
 	"compilerOptions": {
-		"module": "commonjs",
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
 		"noImplicitAny": false,
 		"removeComments": false,
 		"preserveConstEnums": true,

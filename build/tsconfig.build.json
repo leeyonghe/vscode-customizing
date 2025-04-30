@@ -4,7 +4,9 @@
 		"allowJs": false,
 		"checkJs": false,
 		"noEmit": false,
-		"skipLibCheck": true
+		"skipLibCheck": true,
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext"
 	},
 	"include": [
 		"**/*.ts"

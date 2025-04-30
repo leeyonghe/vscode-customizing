@@ -141,40 +141,29 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
 		cols: number,
 		rows: number,
 		env: IProcessEnvironment,
-		/**
-		 * environment used for `findExecutable`
-		 */
 		private readonly _executableEnv: IProcessEnvironment,
 		private readonly _options: ITerminalProcessOptions,
 		@ILogService private readonly _logService: ILogService,
 		@IProductService private readonly _productService: IProductService
 	) {
 		super();
-		let name: string;
-		if (isWindows) {
-			name = path.basename(this.shellLaunchConfig.executable || '');
-		} else {
-			// Using 'xterm-256color' here helps ensure that the majority of Linux distributions will use a
-			// color prompt as defined in the default ~/.bashrc file.
-			name = 'xterm-256color';
-		}
+
 		this._initialCwd = cwd;
 		this._properties[ProcessPropertyType.InitialCwd] = this._initialCwd;
 		this._properties[ProcessPropertyType.Cwd] = this._initialCwd;
+
 		const useConpty = this._options.windowsEnableConpty && process.platform === 'win32' && getWindowsBuildNumber() >= 18309;
-		const useConptyDll = useConpty && this._options.windowsUseConptyDll;
+
+		// Initialize _ptyOptions
 		this._ptyOptions = {
-			name,
-			cwd,
-			// TODO: When node-pty is updated this cast can be removed
+			name: isWindows ? path.basename(this.shellLaunchConfig.executable || '') : 'xterm-256color',
 			env: env as { [key: string]: string },
 			cols,
 			rows,
 			useConpty,
-			useConptyDll,
-			// This option will force conpty to not redraw the whole viewport on launch
 			conptyInheritCursor: useConpty && !!shellLaunchConfig.initialText
 		};
+
 		// Delay resizes to avoid conpty not respecting very early resize calls
 		if (isWindows) {
 			if (useConpty && cols === 0 && rows === 0 && this.shellLaunchConfig.executable?.endsWith('Git\\bin\\bash.exe')) {
@@ -391,10 +380,7 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
 		if (!isWindows || !('useConpty' in this._ptyOptions) || !this._ptyOptions.useConpty) {
 			return;
 		}
-		// Don't throttle when using conpty.dll as it seems to have been fixed in later versions
-		if (this._ptyOptions.useConptyDll) {
-			return;
-		}
+
 		// Use a loop to ensure multiple calls in a single interval space out
 		while (Date.now() - TerminalProcess._lastKillOrStart < Constants.KillSpawnThrottleInterval) {
 			this._logService.trace('Throttling kill/spawn call');

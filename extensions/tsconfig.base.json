@@ -26,7 +26,8 @@
 			"ES2021.String",
 			"ES2021.WeakRef"
 		],
-		"module": "commonjs",
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
 		"strict": true,
 		"exactOptionalPropertyTypes": false,
 		"useUnknownInCatchVariables": false,

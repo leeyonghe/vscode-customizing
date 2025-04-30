@@ -1,33 +1,38 @@
 {
 	"extends": "./tsconfig.base.json",
 	"compilerOptions": {
-		"noEmit": true,
-		"types": [
-			"@webgpu/types",
-			"trusted-types",
-			"wicg-file-system-access"
-		],
-		"paths": {},
-		"module": "amd",
-		"moduleResolution": "node",
+		"esModuleInterop": true,
 		"removeComments": false,
 		"preserveConstEnums": true,
-		"target": "ES2022",
 		"sourceMap": false,
-		"declaration": true
+		"allowJs": true,
+		"resolveJsonModule": true,
+		"isolatedModules": false,
+		"outDir": "../out/vs",
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"types": [
+			"@webgpu/types",
+			"mocha",
+			"semver",
+			"sinon",
+			"trusted-types",
+			"winreg",
+			"wicg-file-system-access"
+		],
+		"plugins": [
+			{
+				"name": "tsec",
+				"exemptionConfig": "./tsec.exemptions.json"
+			}
+		]
 	},
 	"include": [
-		"typings/css.d.ts",
-		"typings/thenable.d.ts",
-		"typings/vscode-globals-product.d.ts",
-		"typings/vscode-globals-nls.d.ts",
-		"typings/editContext.d.ts",
-		"vs/monaco.d.ts",
-		"vs/editor/*",
-		"vs/base/common/*",
-		"vs/base/browser/*",
-		"vs/platform/*/common/*",
-		"vs/platform/*/browser/*"
+		"./*.ts",
+		"./typings",
+		"./vs/**/*.ts",
+		"./vscode-dts/vscode.proposed.*.d.ts",
+		"./vscode-dts/vscode.d.ts"
 	],
 	"exclude": [
 		"node_modules/*",
